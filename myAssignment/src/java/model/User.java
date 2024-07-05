@@ -12,8 +12,16 @@ public class User {
     private String username;
     private String password;
     private String displayname;
-    private Lecturer lecturer;
+   private Role role;
+ private Lecturer lecturer;
     private Student student;
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Role getRole() {
+        return role;
+    } 
 
     public String getUsername() {
         return username;

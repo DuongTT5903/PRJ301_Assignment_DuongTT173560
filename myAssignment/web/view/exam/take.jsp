@@ -1,14 +1,9 @@
-<%-- 
-    Document   : take
-    Created on : Jun 24, 2024, 2:01:09 PM
-    Author     : sonnt-local
---%>
-
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/newcss.css"><!-- comment -->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>JSP Page</title>
     </head>
@@ -19,12 +14,12 @@
                     <td></td>
                     <c:forEach items="${requestScope.exams}" var="e">
                         <td>
-                            ${e.assessment.name}(${e.assessment.weight}) <br/>
+                            ${e.assessment.name} (${e.assessment.weight}) <br/>
                             ${e.from}
                         </td>
                     </c:forEach>
-                <tr>
-                    <c:forEach items="${requestScope.students}" var="s">
+                </tr>
+                <c:forEach items="${requestScope.students}" var="s">
                     <tr>
                         <td>${s.name}</td>
                         <c:forEach items="${requestScope.exams}" var="e">
@@ -35,13 +30,12 @@
                                                value="${g.score}"
                                            </c:if>
                                        </c:forEach>
-                                       />
-                                <input type="hidden" name="gradeid" value="${s.id}_${e.id}"/>
+                                />
+                                <input type="hidden" name="gradeid${s.id}_${e.id}" value="${s.id}_${e.id}"/>
                             </td>
                         </c:forEach>
-                    <tr>
-
-                    </c:forEach>    
+                    </tr>
+                </c:forEach>
             </table>
             <input type="hidden" name="cid" value="${param.cid}" />
             <input type="submit" value="save"/>

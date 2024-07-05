@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
@@ -7,9 +7,11 @@ package dal;
 import java.util.ArrayList;
 import model.User;
 import java.sql.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Lecturer;
+import model.Role;
 
 /**
  *
@@ -17,14 +19,20 @@ import model.Lecturer;
  */
 public class UserDBContext extends DBContext<User> {
 
+
+
     public User getUserByUsernamePassword(String username, String password) {
         PreparedStatement stm =null;
         User user = null;
         try {
-            String sql = "SELECT u.username,u.displayname,l.lid,l.lname\n"
-                    + "FROM users u LEFT JOIN users_lecturers ul ON ul.username = u.username AND ul.active = 1\n"
-                    + "						LEFT JOIN lecturers l ON ul.lid = l.lid\n"
-                    + "						WHERE u.username = ? AND u.[password] = ?";
+         String sql = "SELECT u.username, u.displayname, l.lid, l.lname, r.roleid, r.rolename " +
+             "FROM users u " +
+             "LEFT JOIN users_lecturers ul ON ul.username = u.username AND ul.active = 1 " +
+             "LEFT JOIN lecturers l ON ul.lid = l.lid " +
+             "LEFT JOIN users_roles ur ON ur.username = u.username " +  // Assuming a mapping table between users and roles
+             " JOIN roles r ON ur.roleid = r.roleid " +  // Join the roles table
+             "WHERE u.username = ? AND u.[password] = ? AND r.roleid = ?";
+
             stm = connection.prepareStatement(sql);
             stm.setString(1, username);
             stm.setString(2, password);
@@ -57,7 +65,35 @@ public class UserDBContext extends DBContext<User> {
         }
         return user;
     }
-
+public List<Role> getRoles() {
+    PreparedStatement stm = null;
+    List<Role> roles = new ArrayList<>();
+    try {
+        String sql = "SELECT roleid, rolename FROM roles";
+        stm = connection.prepareStatement(sql);
+        ResultSet rs = stm.executeQuery();
+        while (rs.next()) {
+            int roleid = rs.getInt("roleid");
+            String rolename = rs.getString("rolename");
+            Role role = new Role(roleid, rolename);
+            roles.add(role);
+        }
+    } catch (SQLException ex) {
+        Logger.getLogger(UserDBContext.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+        try {
+            if (stm != null) {
+                stm.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    return roles;
+}
     @Override
     public void insert(User model) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody

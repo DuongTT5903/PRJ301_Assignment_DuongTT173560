@@ -12,7 +12,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import model.User;
+import model.Role;
 
 /**
  *
@@ -33,6 +35,11 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+       
+       UserDBContext dbContext = new UserDBContext();
+        List<Role> roles = dbContext.getRoles();
+        
+        request.setAttribute("roles", roles);
         request.getRequestDispatcher("view/auth/login.jsp").forward(request, response);
     } 
 
@@ -48,12 +55,16 @@ public class LoginController extends HttpServlet {
     throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String rolename=request.getParameter("rolename");
+       
         
         UserDBContext db = new UserDBContext();
         User user = db.getUserByUsernamePassword(username, password);
         if(user !=null)
         {
             request.getSession().setAttribute("user", user);
+             request.setAttribute("rolename", rolename);
+              
             response.getWriter().println("login successful: "+ user.getDisplayname());
         }
         else
