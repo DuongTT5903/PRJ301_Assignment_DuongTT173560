@@ -21,50 +21,52 @@ public class UserDBContext extends DBContext<User> {
 
 
 
-    public User getUserByUsernamePassword(String username, String password) {
-        PreparedStatement stm =null;
-        User user = null;
-        try {
-         String sql = "SELECT u.username, u.displayname, l.lid, l.lname, r.roleid, r.rolename " +
-             "FROM users u " +
-             "LEFT JOIN users_lecturers ul ON ul.username = u.username AND ul.active = 1 " +
-             "LEFT JOIN lecturers l ON ul.lid = l.lid " +
-             "LEFT JOIN users_roles ur ON ur.username = u.username " +  // Assuming a mapping table between users and roles
-             " JOIN roles r ON ur.roleid = r.roleid " +  // Join the roles table
-             "WHERE u.username = ? AND u.[password] = ? AND r.roleid = ?";
+   public User getUserByUsernamePassword(String username, String password, int roleid) {
+    PreparedStatement stm = null;
+    User user = null;
+    try {
+        String sql = "SELECT u.username, u.displayname, l.lid, l.lname, r.roleid, r.rolename " +
+                     "FROM users u " +
+                     "LEFT JOIN users_lecturers ul ON ul.username = u.username AND ul.active = 1 " +
+                     "LEFT JOIN lecturers l ON ul.lid = l.lid " +
+                     "LEFT JOIN roles ur ON ur.roleid = u.roleid " +
+                     "JOIN roles r ON ur.roleid = r.roleid " +
+                     "WHERE u.username = ? AND u.[password] = ? AND r.roleid = ?";
 
-            stm = connection.prepareStatement(sql);
-            stm.setString(1, username);
-            stm.setString(2, password);
-            ResultSet rs = stm.executeQuery();
-            if(rs.next())
-            {
-                user = new User();
-                user.setDisplayname(rs.getString("displayname"));
-                user.setUsername(username);
-                int lid = rs.getInt("lid");
-                if(lid!=0)
-                {
-                   Lecturer lecturer = new Lecturer();
-                   lecturer.setId(lid);
-                   lecturer.setName(rs.getString("lname"));
-                   user.setLecturer(lecturer);
-                }
+        stm = connection.prepareStatement(sql);
+        stm.setString(1, username);
+        stm.setString(2, password);
+        stm.setInt(3, roleid);
+        ResultSet rs = stm.executeQuery();
+        if (rs.next()) {
+            user = new User();
+            user.setDisplayname(rs.getString("displayname"));
+            user.setUsername(username);
+            int lid = rs.getInt("lid");
+            if (lid != 0) {
+                Lecturer lecturer = new Lecturer();
+                lecturer.setId(lid);
+                lecturer.setName(rs.getString("lname"));
+                user.setLecturer(lecturer);
+            }
+        }
+    } catch (SQLException ex) {
+        Logger.getLogger(UserDBContext.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+        try {
+            if (stm != null) {
+                stm.close();
+            }
+            if (connection != null) {
+                connection.close();
             }
         } catch (SQLException ex) {
             Logger.getLogger(UserDBContext.class.getName()).log(Level.SEVERE, null, ex);
         }
-        finally
-        {
-            try {
-                stm.close();
-                connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(UserDBContext.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return user;
     }
+    return user;
+}
+
 public List<Role> getRoles() {
     PreparedStatement stm = null;
     List<Role> roles = new ArrayList<>();

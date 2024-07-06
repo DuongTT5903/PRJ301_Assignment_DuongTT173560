@@ -5,23 +5,34 @@
 
 package controller.auth;
 
-import dal.UserDBContext;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import model.Student;
 import model.User;
-import model.Role;
 
 /**
  *
  * @author sonnt-local
  */
-public class LoginController extends HttpServlet {
+public abstract class BaseRequiredStudentAuthenticationController extends HttpServlet {
    
+    private boolean isAuthenticated(HttpServletRequest request)
+    {
+        User user = (User)request.getSession().getAttribute("user");
+        if(user ==null)
+            return false;
+        else
+        {
+            Student student = user.getStudent();
+            return student != null;
+        }
+    }
+    
     
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -35,13 +46,22 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-       
-       UserDBContext dbContext = new UserDBContext();
-        List<Role> roles = dbContext.getRoles();
-        
-        request.setAttribute("roles", roles);
-        request.getRequestDispatcher("view/auth/login.jsp").forward(request, response);
+        User user = (User)request.getSession().getAttribute("user");
+        if(isAuthenticated(request))
+        {
+            doGet(request, response, user, user.getStudent());
+        }
+        else
+        {
+            response.getWriter().println("access denied!");
+        }
     } 
+    
+    protected abstract void doGet(HttpServletRequest request, HttpServletResponse response,User user, Student student)
+    throws ServletException, IOException;
+    
+    protected abstract void doPost(HttpServletRequest request, HttpServletResponse response,User user, Student student)
+    throws ServletException, IOException;
 
     /** 
      * Handles the HTTP <code>POST</code> method.
@@ -53,27 +73,15 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String rolename=request.getParameter("rolename");
-      String roleidString = request.getParameter("roleid");
-       int roleid = Integer.parseInt(roleidString);
-
-        
-        UserDBContext db = new UserDBContext();
-        User user = db.getUserByUsernamePassword(username, password,roleid);
-        if(user !=null)
+        User user = (User)request.getSession().getAttribute("user");
+        if(isAuthenticated(request))
         {
-            request.getSession().setAttribute("user", user);
-          
-              
-            response.getWriter().println("login successful: "+ user.getDisplayname());
+            doPost(request, response, user, user.getStudent());
         }
         else
         {
-            response.getWriter().println("login failed!");
+            response.getWriter().println("access denied!");
         }
-        
     }
 
     /** 

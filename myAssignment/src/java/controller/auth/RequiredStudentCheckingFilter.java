@@ -18,12 +18,12 @@ import model.User;
  *
  * @author sonnt-local
  */
-public class RequiredLecturerCheckingFilter implements Filter {
+public class RequiredStudentCheckingFilter implements Filter {
 
     private static final boolean debug = true;
     private FilterConfig filterConfig = null;
 
-    public RequiredLecturerCheckingFilter() {
+    public RequiredStudentCheckingFilter() {
     }
 
     private void doBeforeProcessing(ServletRequest request, ServletResponse response)
@@ -65,7 +65,7 @@ public class RequiredLecturerCheckingFilter implements Filter {
             return false;
         } else {
             Lecturer lecturer = user.getLecturer();
-            return lecturer != null && roleid == 2;
+            return lecturer != null && roleid == 1;
         }
     }
 
